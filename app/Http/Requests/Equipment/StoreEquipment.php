@@ -22,7 +22,7 @@ class StoreEquipment extends FormRequest
         $typeIds = $this->input('*.equipment_type_id');
 
         return [
-            '*.equipment_type_id' => 'required|numeric|min:0|not_in:0',
+            '*.equipment_type_id' => 'required|numeric|min:0|not_in:0|exists:equipment_types,id',
             '*.serial_number' => [
                 'required',
                 new EquipmentType($typeIds),
@@ -40,10 +40,11 @@ class StoreEquipment extends FormRequest
     public function messages()
     {
         return [
-            '*.serial_number.required' => 'A serial_number is required',
-            '*.serial_number.string' => 'A serial_number is string',
-            '*.desc.required' => 'A desc is required',
-            '*.desc.string' => 'A desc is string',
+            '*.equipment_type_id' => 'A type_id is not find.',
+            '*.serial_number.required' => 'A serial_number is required.',
+            '*.serial_number.string' => 'A serial_number is string.',
+            '*.desc.required' => 'A desc is required.',
+            '*.desc.string' => 'A desc is string.',
         ];
     }
 

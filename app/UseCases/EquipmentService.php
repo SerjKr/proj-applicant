@@ -4,9 +4,9 @@ namespace App\UseCases;
 
 use App\Http\Resources\Equipment\EquipmentResource;
 use App\Http\Resources\EquipmentErrorResource;
+use App\Http\Resources\ResponseResource;
 use App\Models\Equipment;
 use App\Models\EquipmentType;
-use Illuminate\Support\Facades\DB;
 
 class EquipmentService
 {
@@ -30,9 +30,13 @@ class EquipmentService
     public function doAnswer($success, $errors)
     {
         $itemSuccess = [];
-        $sectionErrors = new \App\Http\Resources\EquipmentErrorResource($errors);
 
-        foreach ($success as $item) {
+        $unique = $this->findDouble($success);
+        $various = $this->preErrors($success, $unique);
+        $this->addErrors($various, $errors);
+        $sectionErrors = new EquipmentErrorResource($errors);
+
+        foreach ($unique as $item) {
             $type = EquipmentType::find($item['equipment_type_id']);
 
             $equipment = Equipment::make([
@@ -48,8 +52,41 @@ class EquipmentService
 
         $sectionSuccess = EquipmentResource::collection($itemSuccess);
 
-        return new \App\Http\Resources\ResponseResource(
+        return new ResponseResource(
             collect(['errors' => $sectionErrors, 'success' => $sectionSuccess])
         );
+    }
+
+    /**
+     * @param $success
+     * @return mixed
+     */
+    private function findDouble($success): mixed
+    {
+        return $success->unique(function ($item) {
+            return $item['equipment_type_id'] . $item['serial_number'];
+        });
+    }
+
+    /**
+     * @param $success
+     * @param mixed $unique
+     * @return mixed
+     */
+    private function preErrors($success, mixed $unique): mixed
+    {
+        return $success->diffKeys($unique)->mapWithKeys(function ($item, $key) {
+            return [$key => ['Double Serial number']];
+        });
+    }
+
+    /**
+     * @param mixed $various
+     * @param $errors
+     * @return void
+     */
+    private function addErrors(mixed $various, $errors): void
+    {
+        $various->map(fn($item, $key) => $errors->put($key, $item));
     }
 }

@@ -39,6 +39,10 @@ class SerialNumberMaska implements Rule
             $type = Equipment::find($this->id)->typeEquipment;
         }
 
+        if (is_null($type)) {
+            return false;
+        }
+
         if (strlen($value) !== strlen($type->mask)) {
             return false;
         }
