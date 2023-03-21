@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\EquipmentType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,11 +15,13 @@ return new class extends Migration {
     {
         Schema::create('equipments', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(\App\Models\EquipmentType::class)->nullable();
+            $table->foreignIdFor(EquipmentType::class, 'equipment_type_id')->constrained();
             $table->string('serial_number', 32);
             $table->text('desc');
             $table->softDeletes();
             $table->timestamps();
+
+            $table->unique(['equipment_type_id', 'serial_number']);
         });
     }
 
